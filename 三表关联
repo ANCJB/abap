@@ -1,0 +1,59 @@
+*&---------------------------------------------------------------------*
+*& Report  ZCJB05
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZCJB05.
+
+**内部テーブルを定義するには、まず①「構造」の定義を行い、②定義した構造を用いて内部テーブルを定義する流れです。
+**①「構造の定義
+TYPES: BEGIN OF CJ_TEST,
+  VBELN    TYPE VBAK-VBELN,
+  VDATU   TYPE VBAK-VDATU,
+  VRKME   TYPE VBAP-VRKME,
+  WERKS   TYPE VBAP-WERKS,
+  PRGRS   TYPE VBEP-PRGRS,
+  EDATU   TYPE VBEP-EDATU,
+
+END OF CJ_TEST.
+
+**②定義した構造を用いて内部テーブルを定義
+DATA : WB_TEST TYPE CJ_TEST,
+            INNER_TEST TYPE  TABLE OF  CJ_TEST.
+
+**内部結合  （内部テーブル定義した後）
+SELECT
+      VBAK~VBELN
+       VBAK~VDATU
+       VBAP~VRKME
+       VBAP~WERKS
+       VBEP~PRGRS
+       VBEP~EDATU
+
+       FROM VBAK
+INNER JOIN  VBAP
+            ON VBAK~VBELN = VBAP~VBELN
+INNER JOIN VBEP
+            ON VBEP~VBELN  = VBAK~VBELN
+           AND   VBEP~VBELN = VBAP~VBELN
+INTO TABLE INNER_TEST
+WHERE VBAK~VBELN = `0000004970` OR VBAK~VBELN = `0000004971`.
+
+*排序删除重复项
+SORT INNER_TEST BY VBELN ASCENDING."~~ escending
+  DELETE ADJACENT DUPLICATES FROM INNER_TEST COMPARING VBELN.
+
+**成績を出力 （读取内表）
+LOOP AT INNER_TEST INTO WB_TEST .
+  WRITE:/
+       WB_TEST-VBELN,
+       WB_TEST-VDATU,
+       WB_TEST-VRKME,
+       WB_TEST-WERKS,
+       WB_TEST-PRGRS,
+        WB_TEST-EDATU.
+ CLEAR: WB_TEST.
+  ENDLOOP.
