@@ -1,0 +1,87 @@
+*&---------------------------------------------------------------------*
+*& Report  ZCJB04
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZCJB04.
+
+*テーブル定義
+*DATA GA_CLASS TYPE ZCLASS_S.
+*
+*SELECT SINGLE
+*     ZCLASS
+*     ZNAME
+*     ZAGE
+*     ZCITY
+*FROM ZCLASS
+*INTO  GA_CLASS
+*WHERE ZCLASS =   `B`.
+
+**クラスの情報を出力
+*WRITE GA_CLASS.
+
+*テーブル定義
+*DATA IT_REPORT TYPE TABLE OF ZREPORT.
+*DATA WA_REPORT TYPE ZREPORT.
+*
+*SELECT *
+*FROM ZREPORT
+*INTO TABLE IT_REPORT
+*WHERE ZCLASS = `A` OR ZCLASS = `C`.  "ZREPORT 里面的ZCLASS
+*
+*LOOP AT IT_REPORT INTO WA_REPORT.
+*WRITE:/
+*          WA_REPORT-ZCLASS,
+*          WA_REPORT-ZNUM,
+*          WA_REPORT-ZMATH,
+*          WA_REPORT-ZJAPANESE,
+*          WA_REPORT-ZABAP.
+*ENDLOOP.
+
+**内部テーブルを定義するには、まず①「構造」の定義を行い、②定義した構造を用いて内部テーブルを定義する流れです。
+**①「構造の定義
+TYPES: BEGIN OF CJ_TEST,
+  ZCLASS   TYPE ZCLASS-ZCLASS,
+  ZNAME    TYPE ZCLASS-ZNAME,
+  ZNUM   TYPE ZREPORT-ZNUM,
+  MATH     TYPE ZREPORT-ZMATH,
+  JAPANESE TYPE ZREPORT-ZJAPANESE,
+
+
+END OF CJ_TEST.
+
+**②定義した構造を用いて内部テーブルを定義
+DATA : WB_TEST TYPE CJ_TEST,
+            INNER_TEST TYPE  TABLE OF  CJ_TEST.
+
+PARAMETERS:
+P_ZCLASS LIKE ZCLASS-ZCLASS.
+
+
+**内部結合  （内部テーブル定義した後）
+SELECT
+ ZCLASS~ZCLASS
+ ZCLASS~ZNAME
+ ZREPORT~ZNUM
+ ZREPORT~ZMATH
+ ZREPORT~ZJAPANESE
+
+        FROM ZCLASS
+INNER JOIN ZREPORT
+            ON ZCLASS~ZCLASS = ZREPORT~ZCLASS
+INTO TABLE INNER_TEST
+  WHERE ZCLASS~ZCLASS = P_ZCLASS.
+
+**成績を出力 （读取内表）
+LOOP AT INNER_TEST INTO WB_TEST .
+  WRITE:/
+       WB_TEST-ZCLASS,
+       WB_TEST-ZNAME,
+       WB_TEST-ZNUM,
+       WB_TEST-MATH,
+       WB_TEST-JAPANESE.
+  CLEAR: WB_TEST.
+ENDLOOP.
