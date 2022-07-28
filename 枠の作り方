@@ -18,12 +18,18 @@
                            F TYPE C.
     SELECTION-SCREEN END OF BLOCK B3.
     
-    
-    
-
 * 枠に囲い線をつける：WITH FRAME      *枠の表題を付ける：TITEL *線を引く：ULINE
       SELECTION-SCREEN BEGIN OF BLOCK B4 WITH FRAME TITLE TEXT-S01.
       SELECTION-SCREEN ULINE.
       PARAMETERS : G TYPE C,
                              H TYPE C.
       SELECTION-SCREEN END OF BLOCK B4.
+
+* 枠に囲い線をつける：WITH FRAME   *枠の表題を付ける：TITEL  *線を引く：ULINE  *文字を出力する：COMMENT
+      SELECTION-SCREEN COMMENT  /10(13) TEXT-S02.
+
+      SELECTION-SCREEN BEGIN OF BLOCK B5 WITH FRAME TITLE TEXT-S01.
+      SELECTION-SCREEN ULINE.
+      PARAMETERS :I TYPE C,
+                           J TYPE C.
+      SELECTION-SCREEN END OF BLOCK B5.
