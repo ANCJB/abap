@@ -10,6 +10,8 @@ DATA:WA_CLASS LIKE ZCLASS.
 
 INSERT zclass FROM wa_class.
 
+* DELETE FROM ZCLASS WHERE  ZCLASS  = `B` AND ZNAME = `陳`.
+
 if sy-subrc = 0.
 WRITE `ok`.
 ELSE.
