@@ -1,0 +1,31 @@
+
+
+DATA:WA_CLASS LIKE ZCLASS.
+DATA:IT_CLASS LIKE STANDARD TABLE OF WA_CLASS.
+
+TYPES: BEGIN OF TY_TEST,
+  ZCLASS   TYPE ZCLASS-ZCLASS,
+  ZNAME    TYPE ZCLASS-ZNAME,
+  NUMBER   TYPE ZREPORT-ZNUM,
+  MATH     TYPE ZREPORT-ZMATH,
+  JAPANESE TYPE ZREPORT-ZJAPANESE,
+
+END OF TY_TEST.
+*
+DATA WA_TEST TYPE TY_TEST.
+DATA IT_TEST LIKE STANDARD TABLE OF  WA_TEST.
+
+  wa_class-zclass = `B`.
+  wa_class-zname = `陳`.
+  wa_class-zage = 20.
+  wa_class-zcity = `tokyo`.
+
+
+INSERT zclass FROM wa_class.
+
+if sy-subrc = 0.
+WRITE `ok`.
+ELSE.
+WRITE `no`.
+ENDIF.
+
