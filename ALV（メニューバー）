@@ -1,0 +1,164 @@
+*--------一変数を定義する
+*定义类型池 TYPE-POOL：SLIS
+*针对ALV的控制信息数据（Layout、Fieldcat0）
+
+*-------二内部テーブルを定義する
+*存放自定义数据文件的数据，以及在ALV中显示
+
+*-------三データを取得
+*读取数据存放至Internal Table
+
+*-------四ALV　Layout　の設定
+*建立ALV显示样式layout和显示字段清单（Field Catalogs）
+
+*-------五イベントを定義
+*建立事件清单
+
+*-------六alvを表示する
+*调用ALV Function Module
+
+*--------七ユーザコマンド
+*定义User案件处理时间
+
+REPORT  ZCJB06.
+
+TYPE-POOLS:SLIS.
+
+*２．フィールドカタログの取得
+DATA:
+  LT_FIELDCAT   TYPE SLIS_T_FIELDCAT_ALV,     " フィールドカタログ
+  LW_FIELDCAT   TYPE SLIS_FIELDCAT_ALV,      " フィールドカタログ設定用構造
+  LS_LAYOUT      TYPE SLIS_LAYOUT_ALV,    "ALV格式控制的结构体:layout
+  LT_EVENT        TYPE SLIS_T_EVENT,                "事件的内标
+  LS_EVENT        TYPE SLIS_ALV_EVENT.
+
+
+LS_LAYOUT-ZEBRA = 'X'.
+LS_LAYOUT-DETAIL_POPUP = 'X'.
+LS_LAYOUT-DETAIL_TITLEBAR ='クラスデータ'.
+LS_LAYOUT-F2CODE = '&ETA'.
+LS_LAYOUT-COLWIDTH_OPTIMIZE = 'X'.
+
+* フィールドカタログの設定
+  CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 1.
+  LW_FIELDCAT-FIELDNAME   = 'ZCLASS'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = 'クラス'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+  CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 2.
+  LW_FIELDCAT-FIELDNAME   = 'ZNUM'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = '番号'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+  CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 3.
+  LW_FIELDCAT-FIELDNAME   = 'ZNAME'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = '名前'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+  CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 4.
+  LW_FIELDCAT-FIELDNAME   = 'ZMATH'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = '数学'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+  CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 5.
+  LW_FIELDCAT-FIELDNAME   = 'ZJAPANESE'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = '日本語'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+  CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 6.
+  LW_FIELDCAT-FIELDNAME   = 'ZABAP'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = 'ABAP成績'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+    CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 7.
+  LW_FIELDCAT-FIELDNAME   = 'ZAGE'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = '年齢'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+      CLEAR LW_FIELDCAT.
+  LW_FIELDCAT-COL_POS     = 8.
+  LW_FIELDCAT-FIELDNAME   = 'ZCITY'.
+  LW_FIELDCAT-REF_TABNAME = 'GT_CLASS'.
+  LW_FIELDCAT-SELTEXT_M   = '都市'.
+
+
+  LS_EVENT-NAME = 'PF_STATUS_SET'. "GUISTATUS
+  LS_EVENT-FORM = 'FORM_PF_STATUS_SET'.
+  APPEND LW_FIELDCAT TO LT_FIELDCAT.
+
+TYPES: BEGIN OF J_TEST,
+
+   ZCLASS       TYPE      ZCLASS-ZCLASS,
+   ZNUM           TYPE      ZREPORT-ZNUM,
+   ZNAME         TYPE      ZREPORT-ZNAME,
+   ZJAPANESE  TYPE      ZREPORT-ZJAPANESE,
+   ZMATH         TYPE      ZREPORT-ZMATH,
+   ZABAP          TYPE      ZREPORT-ZABAP,
+   ZAGE            TYPE      ZCLASS-ZAGE,
+   ZCITY           TYPE      ZCLASS-ZCITY,
+
+END OF J_TEST.
+
+
+DATA WA_CLASS TYPE J_TEST.
+
+DATA GT_CLASS  TYPE  TABLE OF J_TEST.
+
+*１．出力データの取得
+  SELECT
+    ZREPORT~ZCLASS
+    ZREPORT~ZNUM
+    ZREPORT~ZNAME
+    ZREPORT~ZMATH
+    ZREPORT~ZJAPANESE
+    ZREPORT~ZABAP
+    ZCLASS~ZAGE
+    ZCLASS~ZCITY
+
+   FROM ZREPORT
+   INNER JOIN ZCLASS
+    ON ZCLASS~ZCLASS = ZREPORT~ZCLASS
+  INTO TABLE GT_CLASS.
+
+
+                CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+                EXPORTING
+
+                   I_CALLBACK_PROGRAM                = SY-REPID
+
+                    IS_LAYOUT                         = LS_LAYOUT
+
+                   IT_FIELDCAT                       = LT_FIELDCAT
+
+                  I_SAVE                            = 'X'
+
+                    IT_EVENTS                         = LT_EVENT
+
+                  TABLES
+                    T_OUTTAB                          = GT_CLASS
+                 EXCEPTIONS
+                   PROGRAM_ERROR                     = 1
+                   OTHERS                            = 2.
+
+                IF SY-SUBRC <> 0.
+* Implement suitable error handling here
+                ENDIF.
+
+ "statis 引用
+FORM FORM_PF_STATUS_SET   USING RT_EXTAB TYPE SLIS_T_EXTAB.
+    SET PF-STATUS 'STANDARD_J '.
+    ENDFORM.
